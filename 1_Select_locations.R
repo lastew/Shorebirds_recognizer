@@ -19,34 +19,43 @@ library(terra)
 library(stringr)
 library(tidyverse)
 
+# bbox - bounding box
 # sta - ARU locations in spatial data format
 # lcc - land cover canada habitat raster
-# bbox - bounding box
+
+
+# bounding box: -120 to -110 longitude, 58 to 61.5 latitude
+bbox <- st_polygon(list(cbind(c(-120,-110,-110,-120,-120), c(58,58,61.5,61.5,58))))
+crs(bbox)
+bbox = st_sfc(bbox,crs=4326) # WGS84
 
 
 sta=st_read("../../BOSS_ARU_Locations.csv", options=c("X_POSSIBLE_NAMES=longitude","Y_POSSIBLE_NAMES=latitude"))
 str(sta)
 sta<-sta[!is.na(sta$Latitude) & !is.na(sta$Longitude),]
 st_crs(sta) <- CRS("+init=epsg:4326") # WGS84
-
-# filter by bounding box: -120 to -110 longitude, 58 to 61.5 latitude
-
 sta = sta %>% filter(Latitude>58 & Latitude<61.5 & Longitude > -120 & Longitude < -110)
 
 
 lcc <- raster("../../can_land_cover_2020_30m_tif/CAN_NALCMS_landcover_2020_30m/data/CAN_NALCMS_landcover_2020_30m.tif")
 str(lcc)
-lcc.codes <- read.table("../6. Spatial data/Tuyeta/lcc/Phase 01/lcc_Ramparts_Phase_01_Classes.txt", header = T, sep = "\t")
+lcc.codes <- read.csv("../../can_land_cover_2020_30m_tif/lcc_codes.csv", header = T)
 st_crs(lcc) # WGS 84 
-area(lcc)
+# crop by same bounding box as above
+lcc <- raster::crop(lcc,st_bbox(bbox))
 
-lcc.codes <- read.table("../6. Spatial data/Tuyeta/lcc/Phase 01/lcc_Ramparts_Phase_01_Classes.txt", header = T, sep = "\t")
-lcc.codes$Class
 
-zones <- st_read("../6. Spatial data/Ecozones/Ecoregions")
-st_crs(zones)  # NAD83
-head(zones)
-zones = zones  %>% dplyr::select(REGION_NAM,geometry)
+
+
+# zones <- st_read("../6. Spatial data/Ecozones/Ecoregions")
+# st_crs(zones)  # NAD83
+# head(zones)
+# zones = zones  %>% dplyr::select(REGION_NAM,geometry)
+
+#### Map it to make sure it looks ok ####
+
+
+
 
 #### Extract station-level ecoregion information ####
 
