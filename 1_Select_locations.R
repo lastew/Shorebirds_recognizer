@@ -62,19 +62,47 @@ lcc <- raster::crop(lcc,st_bbox(bbox))
 # head(zones)
 # zones = zones  %>% dplyr::select(REGION_NAM,geometry)
 
-#### Map it to make sure it looks ok ####
+
+#### Map a subset to make sure it looks ok ####
 
 fr <- sta%>% filter(ProjectID=="FR")
 lcc_tmp <- raster::crop(lcc,st_bbox(fr))
 
-tm_shape(fr) + # check that it looks they way I want it to
-  tm_dots() +
-  tm_shape(lcc_tmp) + tm_raster()
+tm_shape(lcc_tmp) +   tm_raster() +
+  tm_shape(fr) + tm_dots(size = 0.1)
 
+lesa <- st_read("lesa.kml")
+lesa <- st_transform(lesa,st_crs(lcc))
 
+lcc_tmp <- raster::crop(lcc,st_bbox(lesa))
+
+tm_shape(lesa) + tm_polygons(col = NA)+
+  tm_shape(lcc_tmp,raster.downsample = F) +   
+  tm_raster(style = "cat",palette = rgb(lcc.codes[c(2,10,11,18),5:7]/256),
+            labels=lcc.codes$landcover[c(2,10,11,18)])
+lcc.codes
 
 #### Extract station-level land cover information ####
 
 sta_lcc <- raster::extract(lcc, sta) 
 summary(sta_lcc)
 sta$value <- sta_lcc
+
+
+#### Filter to land covers of interest for shorebirds ####
+
+lcc.codes
+# Wetland is 14
+# Temperate or sub-polar shrubland is 8
+# Temperate or sub-polar grassland is 10
+# Temperate or sub-polar needleleaf forest is 1
+
+lcc_stations <- sta %>% filter(value %in% c(1,8,10,14))
+#399 of 566 were chosen. doesn't narrow it down a ton
+
+# what if we just removed deciduous and mixed wood
+lcc_stations_nodecid <- sta %>% filter(!value %in% 4:6)
+# REALLY doesn't narrow it down
+# well we're going to go for narrowing down the time of day and year instead.
+
+write.csv(lcc_stations_nodecid,"Selected_locations.csv",row.names = F)
