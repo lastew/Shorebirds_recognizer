@@ -86,7 +86,7 @@ lcc.codes
 
 sta_lcc <- raster::extract(lcc, sta) 
 summary(sta_lcc)
-sta$value <- sta_lcc
+sta$lcc_code <- sta_lcc
 
 
 #### Filter to land covers of interest for shorebirds ####
@@ -97,12 +97,14 @@ lcc.codes
 # Temperate or sub-polar grassland is 10
 # Temperate or sub-polar needleleaf forest is 1
 
-lcc_stations <- sta %>% filter(value %in% c(1,8,10,14))
+lcc_stations <- sta %>% filter(lcc_code %in% c(1,8,10,14))
 #399 of 566 were chosen. doesn't narrow it down a ton
 
 # what if we just removed deciduous and mixed wood
-lcc_stations_nodecid <- sta %>% filter(!value %in% 4:6)
+lcc_stations_nodecid <- sta %>% filter(!lcc_code %in% 4:6)
 # REALLY doesn't narrow it down
 # well we're going to go for narrowing down the time of day and year instead.
+
+lcc_stations_nodecid$geometry <- NULL
 
 write.csv(lcc_stations_nodecid,"Selected_locations.csv",row.names = F)
