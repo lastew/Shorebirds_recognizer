@@ -12,12 +12,25 @@ library(filesstrings)
 library(stringr)
 library(dplyr)
 
+selection <- read.csv("Selected_locations.csv")
+
+
+
+
+# NEED TO ADD LOCATION SELECTION IN FOR NEXT PROJECT
+
+
+
+
+
+
 
 # specify where the recordings are being read from and saved to
 
-dir.create("test_directory")
-save_dir <-paste0(getwd(),"/test_directory")
-save_dir
+
+save_dir <-"E:/FortSmith"
+
+dir.create(save_dir)
 
 read_dir <- "D:/Fort Smith 2022-2023 ARU"
 
